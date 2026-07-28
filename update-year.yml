@@ -1,0 +1,35 @@
+name: Update current year
+
+on:
+  schedule:
+    - cron: "0 0 1 1 *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-year:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update year
+        run: |
+          YEAR=$(date +'%Y')
+          sed -i -E "s/[0-9]{4}-(<!-- CURRENT_YEAR -->)/${YEAR}-\1/" README.md
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+
+          git add README.md
+          git commit -m "Update copyright year"
+          git push
